@@ -1,0 +1,3 @@
+{:lib com.github.conao3/kilo
+ :version "0.1.{{git/commit-count}}"
+ :main kilo.core}

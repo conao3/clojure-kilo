@@ -1,4 +1,5 @@
-(ns kilo.core)
+(ns kilo.core
+  (:gen-class))
 
-(defn run [opts]
+(defn -main [& args]
   (println "hello, world"))
