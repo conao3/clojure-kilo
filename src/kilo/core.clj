@@ -2,4 +2,5 @@
   (:gen-class))
 
 (defn -main [& args]
-  (println "hello, world"))
+  (println "hello, world")
+  (println (read-line)))
