@@ -15,4 +15,5 @@
 (defn -main [& args]
   (println "hello, world")
   (doseq [elm (byte-seq (new java.io.BufferedReader *in*))]
+    (when (= elm (int \q)) (System/exit 1))
     (println elm)))
