@@ -3,6 +3,9 @@
   (:require
    [clojure.string :as string]))
 
+
+;;; utils
+
 (defn exec [& args]
   (let [pb (java.lang.ProcessBuilder. (into-array String args))]
     (.redirectInput pb java.lang.ProcessBuilder$Redirect/INHERIT)
@@ -21,6 +24,9 @@
   (if (.ready reader)
     (.read reader)
     0))
+
+
+;;; init
 
 (defn -main [& args]
   (let [res (exec "stty" "-g")]
