@@ -7,6 +7,9 @@
 
 ;;; utils
 
+(defn ctrl-key [ch]
+  (bit-and (byte ch) 0x1f))
+
 (defn exec [& args]
   (print "exec" args "\r\n")
   (flush)
@@ -55,6 +58,6 @@
     (loop [inpt 0]
       (print "inpt: " inpt "\r\n")
       (flush)
-      (when-not (= inpt (byte \q))
+      (when-not (= inpt (ctrl-key \q))
         (recur (read1 (java.io.BufferedReader. *in*)))))
     (disable-raw-mode terminal-config)))
