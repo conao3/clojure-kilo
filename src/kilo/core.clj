@@ -48,6 +48,16 @@
 (defn disable-raw-mode [terminal-config]
   (exec "/usr/bin/env" "stty" terminal-config))
 
+(defn editor-read-key []
+  (read1 (java.io.BufferedReader. *in*)))
+
+(defn editor-process-key []
+  (let [c (editor-read-key)]
+    (print "inpt: " c "\r\n")
+    (flush)
+    (cond
+      (= c (ctrl-key \q)) (do (print "quit\r\n") (flush) -1)
+      :else c)))
 
 ;;; init
 
@@ -56,8 +66,6 @@
     (print "terminal-config: " terminal-config "\r\n")
     (flush)
     (loop [inpt 0]
-      (print "inpt: " inpt "\r\n")
-      (flush)
-      (when-not (= inpt (ctrl-key \q))
-        (recur (read1 (java.io.BufferedReader. *in*)))))
+      (when-not (= inpt -1)
+        (recur (editor-process-key))))
     (disable-raw-mode terminal-config)))
