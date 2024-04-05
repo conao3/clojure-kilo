@@ -52,7 +52,9 @@
   (let [terminal-config (enable-raw-mode)]
     (print "terminal-config: " terminal-config "\r\n")
     (flush)
-    (let [inpt (read1 (java.io.BufferedReader. *in*))]
-      (print inpt "\r\n")
-      (flush))
+    (loop [inpt 0]
+      (print "inpt: " inpt "\r\n")
+      (flush)
+      (when-not (= inpt (byte \q))
+        (recur (read1 (java.io.BufferedReader. *in*)))))
     (disable-raw-mode terminal-config)))
