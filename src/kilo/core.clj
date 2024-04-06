@@ -8,12 +8,12 @@
 
 ;;; data
 
-(def kilo-version "0.0.1")
+(def KILO-VERSION "0.0.1")
 
-(def arrow-left 1000)
-(def arrow-right 1001)
-(def arrow-up 1002)
-(def arrow-down 1003)
+(def ARROW-LEFT 1000)
+(def ARROW-RIGHT 1001)
+(def ARROW-UP 1002)
+(def ARROW-DOWN 1003)
 
 (def cx (atom 0))
 (def cy (atom 0))
@@ -75,10 +75,10 @@
                 (not (= 0 (reset! c0 (read1 stdin))))
                 (not (= 0 (reset! c1 (read1 stdin)))))
            (cond
-             (and (= @c0 (byte \[)) (= @c1 (byte \A))) arrow-up
-             (and (= @c0 (byte \[)) (= @c1 (byte \B))) arrow-down
-             (and (= @c0 (byte \[)) (= @c1 (byte \C))) arrow-right
-             (and (= @c0 (byte \[)) (= @c1 (byte \D))) arrow-left))
+             (and (= @c0 (byte \[)) (= @c1 (byte \A))) ARROW-UP
+             (and (= @c0 (byte \[)) (= @c1 (byte \B))) ARROW-DOWN
+             (and (= @c0 (byte \[)) (= @c1 (byte \C))) ARROW-RIGHT
+             (and (= @c0 (byte \[)) (= @c1 (byte \D))) ARROW-LEFT))
          c))
       :else c)))
 
@@ -92,7 +92,7 @@
 (defn editor-draw-rows [buf]
   (dotimes [i (deref screen-rows)]
     (if (= i (int (/ (deref screen-rows) 3)))
-      (let [welcome (str "Kilo editor -- version " kilo-version)
+      (let [welcome (str "Kilo editor -- version " KILO-VERSION)
             padding (int (/ (- (deref screen-columns) (count welcome)) 2))]
         (.write buf "~")
         (.write buf (apply str (repeat (dec padding) " ")))
@@ -122,10 +122,10 @@
 
 (defn editor-move-cursor [c]
   (cond
-    (= c arrow-left) (swap! cx #(max 0 (dec %)))
-    (= c arrow-right) (swap! cx #(min @screen-columns (inc %)))
-    (= c arrow-up) (swap! cy #(max 0 (dec %)))
-    (= c arrow-down) (swap! cy #(min @screen-rows (inc %))))
+    (= c ARROW-LEFT) (swap! cx #(max 0 (dec %)))
+    (= c ARROW-RIGHT) (swap! cx #(min @screen-columns (inc %)))
+    (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
+    (= c ARROW-DOWN) (swap! cy #(min @screen-rows (inc %))))
   c)
 
 (defn editor-process-keypress []
@@ -133,10 +133,10 @@
     (cond
       (= c (ctrl-key \q)) -1
       (or
-       (= c arrow-left)
-       (= c arrow-right)
-       (= c arrow-up)
-       (= c arrow-down))
+       (= c ARROW-LEFT)
+       (= c ARROW-RIGHT)
+       (= c ARROW-UP)
+       (= c ARROW-DOWN))
       (editor-move-cursor c)
       :else c)))
 
