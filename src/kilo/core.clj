@@ -7,6 +7,8 @@
 
 ;;; data
 
+(def kilo_version "0.0.1")
+
 (def screen-rows (atom 0))
 (def screen-columns (atom 0))
 
@@ -68,7 +70,13 @@
 
 (defn editor-draw-rows [buf]
   (dotimes [i (deref screen-rows)]
-    (.write buf "~")
+    (if (= i (int (/ (deref screen-rows) 3)))
+      (let [welcome (str "Kilo editor -- version " kilo_version)
+            padding (int (/ (- (deref screen-columns) (count welcome)) 2))]
+        (.write buf "~")
+        (.write buf (apply str (repeat (dec padding) " ")))
+        (.write buf welcome))
+      (.write buf "~"))
     (.write buf "\u001b[K")
     (when (< i (- (deref screen-rows) 1))
       (.write buf "\r\n"))))
