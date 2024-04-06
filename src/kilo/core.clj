@@ -5,6 +5,12 @@
    [flatland.useful.utils :as useful.utils]))
 
 
+;;; data
+
+(def screen-rows (atom 0))
+(def screen-columns (atom 0))
+
+
 ;;; utils
 
 (defn ctrl-key [ch]
@@ -57,7 +63,7 @@
 ;;; output
 
 (defn editor-draw-rows []
-  (dotimes [i 24]
+  (dotimes [i (deref screen-rows)]
     (print "~\r\n")))
 
 (defn editor-refresh-screen []
@@ -72,8 +78,13 @@
 
 ;;; init
 
+(defn init-editor []
+  (reset! screen-rows 24)
+  (reset! screen-columns 80))
+
 (defn -main [& args]
   (let [terminal-config (enable-raw-mode)]
+    (init-editor)
     (loop [inpt 0]
       (when-not (= inpt -1)
         (editor-refresh-screen)
