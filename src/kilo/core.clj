@@ -10,6 +10,11 @@
 
 (def kilo-version "0.0.1")
 
+(def arrow-left (byte \a))
+(def arrow-right (byte \d))
+(def arrow-up (byte \w))
+(def arrow-down (byte \s))
+
 (def cx (atom 0))
 (def cy (atom 0))
 (def screen-rows (atom 0))
@@ -70,10 +75,10 @@
                 (not (= 0 (reset! c0 (read1 stdin))))
                 (not (= 0 (reset! c1 (read1 stdin)))))
            (cond
-             (and (= @c0 (byte \[)) (= @c1 (byte \A))) (byte \w)
-             (and (= @c0 (byte \[)) (= @c1 (byte \B))) (byte \s)
-             (and (= @c0 (byte \[)) (= @c1 (byte \C))) (byte \d)
-             (and (= @c0 (byte \[)) (= @c1 (byte \D))) (byte \a)))
+             (and (= @c0 (byte \[)) (= @c1 (byte \A))) arrow-up
+             (and (= @c0 (byte \[)) (= @c1 (byte \B))) arrow-down
+             (and (= @c0 (byte \[)) (= @c1 (byte \C))) arrow-right
+             (and (= @c0 (byte \[)) (= @c1 (byte \D))) arrow-left))
          c))
       :else c)))
 
@@ -117,10 +122,10 @@
 
 (defn editor-move-cursor [c]
   (cond
-    (= c (byte \a)) (swap! cx dec)
-    (= c (byte \d)) (swap! cx inc)
-    (= c (byte \w)) (swap! cy dec)
-    (= c (byte \s)) (swap! cy inc))
+    (= c arrow-left) (swap! cx dec)
+    (= c arrow-right) (swap! cx inc)
+    (= c arrow-up) (swap! cy dec)
+    (= c arrow-down) (swap! cy inc))
   c)
 
 (defn editor-process-keypress []
