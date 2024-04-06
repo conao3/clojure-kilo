@@ -14,6 +14,8 @@
 (def ARROW-RIGHT 1001)
 (def ARROW-UP 1002)
 (def ARROW-DOWN 1003)
+(def PAGE-UP 1004)
+(def PAGE-DOWN 1005)
 
 (def cx (atom 0))
 (def cy (atom 0))
@@ -75,6 +77,12 @@
                 (not (= 0 (reset! c0 (read1 stdin))))
                 (not (= 0 (reset! c1 (read1 stdin)))))
            (cond
+             (and (= @c0 (byte \[)) (<= (byte \0) @c1) (<= @c1 (byte \9)))
+             (when (not (= 0 (reset! c2 (read1 stdin))))
+               (reset! debug-str (str "ESC [ " @c1 " " @c2))
+               (cond
+                 (and (= @c1 (byte \5)) (= @c2 (byte \~))) PAGE-UP
+                 (and (= @c1 (byte \6)) (= @c2 (byte \~))) PAGE-DOWN))
              (and (= @c0 (byte \[)) (= @c1 (byte \A))) ARROW-UP
              (and (= @c0 (byte \[)) (= @c1 (byte \B))) ARROW-DOWN
              (and (= @c0 (byte \[)) (= @c1 (byte \C))) ARROW-RIGHT
@@ -138,6 +146,8 @@
        (= c ARROW-UP)
        (= c ARROW-DOWN))
       (editor-move-cursor c)
+      (= c PAGE-UP) (dotimes [_ @screen-rows] (editor-move-cursor ARROW-UP))
+      (= c PAGE-DOWN) (dotimes [_ @screen-rows] (editor-move-cursor ARROW-DOWN))
       :else c)))
 
 
