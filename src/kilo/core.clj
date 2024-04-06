@@ -39,13 +39,13 @@
 
 (defn enable-raw-mode []
   (useful.utils/returning
-   (exec "/usr/bin/env" "stty" "-g")
-   (exec "/usr/bin/env" "stty" "-brkint" "-icrnl" "-inpck" "-istrip" "-ixon")
-   (exec "/usr/bin/env" "stty" "-opost")
-   (exec "/usr/bin/env" "stty" "cs8")
-   (exec "/usr/bin/env" "stty" "-echo" "-icanon" "-iexten" "-isig")
-   (exec "/usr/bin/env" "stty" "min" "0")
-   (exec "/usr/bin/env" "stty" "time" "1")))
+      (exec "/usr/bin/env" "stty" "-g")
+    (exec "/usr/bin/env" "stty" "-brkint" "-icrnl" "-inpck" "-istrip" "-ixon")
+    (exec "/usr/bin/env" "stty" "-opost")
+    (exec "/usr/bin/env" "stty" "cs8")
+    (exec "/usr/bin/env" "stty" "-echo" "-icanon" "-iexten" "-isig")
+    (exec "/usr/bin/env" "stty" "min" "0")
+    (exec "/usr/bin/env" "stty" "time" "1")))
 
 (defn disable-raw-mode [terminal-config]
   (exec "/usr/bin/env" "stty" terminal-config))
