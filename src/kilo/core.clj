@@ -11,8 +11,6 @@
   (bit-and (byte ch) 0x1f))
 
 (defn exec [& args]
-  (print "exec" args "\r\n")
-  (flush)
   (let [pb (java.lang.ProcessBuilder. (into-array String args))]
     (.redirectInput pb java.lang.ProcessBuilder$Redirect/INHERIT)
 
@@ -24,8 +22,6 @@
 (defn read1 [^java.io.BufferedReader reader]
   (loop [cnt 0]
     (when (and (not (.ready reader)) (< cnt 10))
-      (print "waiting: " cnt "\r\n")
-      (flush)
       (Thread/sleep 200)
       (recur (inc cnt))))
   (if (.ready reader)
@@ -53,8 +49,6 @@
 
 (defn editor-process-key []
   (let [c (editor-read-key)]
-    (print "inpt: " c "\r\n")
-    (flush)
     (cond
       (= c (ctrl-key \q)) -1
       :else c)))
@@ -80,14 +74,11 @@
 
 (defn -main [& args]
   (let [terminal-config (enable-raw-mode)]
-    (print "terminal-config: " terminal-config "\r\n")
-    (flush)
     (loop [inpt 0]
       (when-not (= inpt -1)
         (editor-refresh-screen)
         (recur (editor-process-key))))
     (print "\u001b[2J")
     (print "\u001b[H")
-    (print "quit\r\n")
     (flush)
     (disable-raw-mode terminal-config)))
