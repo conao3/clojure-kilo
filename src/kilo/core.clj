@@ -59,6 +59,10 @@
       (= c (ctrl-key \q)) -1
       :else c)))
 
+(defn get-window-size []
+  (let [res (exec "/usr/bin/env" "stty" "size")]
+    (map #(Integer/parseInt %) (string/split res #"\s"))))
+
 
 ;;; output
 
@@ -79,8 +83,9 @@
 ;;; init
 
 (defn init-editor []
-  (reset! screen-rows 24)
-  (reset! screen-columns 80))
+  (let [[rows columns] (get-window-size)]
+    (reset! screen-rows rows)
+    (reset! screen-columns columns)))
 
 (defn -main [& args]
   (let [terminal-config (enable-raw-mode)]
