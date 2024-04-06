@@ -62,8 +62,16 @@
 
 ;;; output
 
+(defn editor-draw-rows []
+  (dotimes [i 24]
+    (print "~\r\n")))
+
 (defn editor-refresh-screen []
   (print "\u001b[2J")
+  (print "\u001b[H")
+
+  (editor-draw-rows)
+
   (print "\u001b[H")
   (flush))
 
