@@ -56,8 +56,17 @@
     (print "inpt: " c "\r\n")
     (flush)
     (cond
-      (= c (ctrl-key \q)) (do (print "quit\r\n") (flush) -1)
+      (= c (ctrl-key \q)) -1
       :else c)))
+
+
+;;; output
+
+(defn editor-refresh-screen []
+  (print "\u001b[2J")
+  (print "\u001b[H")
+  (flush))
+
 
 ;;; init
 
@@ -67,5 +76,10 @@
     (flush)
     (loop [inpt 0]
       (when-not (= inpt -1)
+        (editor-refresh-screen)
         (recur (editor-process-key))))
+    (print "\u001b[2J")
+    (print "\u001b[H")
+    (print "quit\r\n")
+    (flush)
     (disable-raw-mode terminal-config)))
