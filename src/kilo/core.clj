@@ -14,10 +14,11 @@
 (def ARROW-RIGHT 1001)
 (def ARROW-UP 1002)
 (def ARROW-DOWN 1003)
-(def HOME-KEY 1004)
-(def END-KEY 1005)
-(def PAGE-UP 1006)
-(def PAGE-DOWN 1007)
+(def DEL-KEY 1004)
+(def HOME-KEY 1005)
+(def END-KEY 1006)
+(def PAGE-UP 1007)
+(def PAGE-DOWN 1008)
 
 (def cx (atom 0))
 (def cy (atom 0))
@@ -84,6 +85,7 @@
                (reset! debug-str (str "ESC [ " @c1 " " @c2))
                (cond
                  (and (= @c1 (byte \1)) (= @c2 (byte \~))) HOME-KEY
+                 (and (= @c1 (byte \3)) (= @c2 (byte \~))) DEL-KEY
                  (and (= @c1 (byte \4)) (= @c2 (byte \~))) END-KEY
                  (and (= @c1 (byte \5)) (= @c2 (byte \~))) PAGE-UP
                  (and (= @c1 (byte \6)) (= @c2 (byte \~))) PAGE-DOWN
