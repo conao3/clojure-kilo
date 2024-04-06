@@ -122,10 +122,10 @@
 
 (defn editor-move-cursor [c]
   (cond
-    (= c arrow-left) (swap! cx dec)
-    (= c arrow-right) (swap! cx inc)
-    (= c arrow-up) (swap! cy dec)
-    (= c arrow-down) (swap! cy inc))
+    (= c arrow-left) (swap! cx #(max 0 (dec %)))
+    (= c arrow-right) (swap! cx #(min @screen-columns (inc %)))
+    (= c arrow-up) (swap! cy #(max 0 (dec %)))
+    (= c arrow-down) (swap! cy #(min @screen-rows (inc %))))
   c)
 
 (defn editor-process-keypress []
