@@ -2,6 +2,7 @@
   (:gen-class)
   (:require
    [clojure.string :as string]
+   [clojure.core.match :refer [match]]
    [flatland.useful.utils :as useful.utils]))
 
 
@@ -57,7 +58,24 @@
   (exec "/usr/bin/env" "stty" terminal-config))
 
 (defn editor-read-key []
-  (read1 (java.io.BufferedReader. *in*)))
+  (let [stdin (java.io.BufferedReader. *in*)
+        c (read1 stdin)]
+    (cond
+      (= c 0x1b)
+      (let [c0 (atom 0)
+            c1 (atom 0)
+            c2 (atom 0)]
+        (or
+         (when (and
+                (not (= 0 (reset! c0 (read1 stdin))))
+                (not (= 0 (reset! c1 (read1 stdin)))))
+           (cond
+             (and (= @c0 (byte \[)) (= @c1 (byte \A))) (byte \w)
+             (and (= @c0 (byte \[)) (= @c1 (byte \B))) (byte \s)
+             (and (= @c0 (byte \[)) (= @c1 (byte \C))) (byte \d)
+             (and (= @c0 (byte \[)) (= @c1 (byte \D))) (byte \a)))
+         c))
+      :else c)))
 
 (defn get-window-size []
   (let [res (exec "/usr/bin/env" "stty" "size")]
