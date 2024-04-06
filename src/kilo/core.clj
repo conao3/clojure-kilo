@@ -8,7 +8,7 @@
 
 ;;; data
 
-(def kilo_version "0.0.1")
+(def kilo-version "0.0.1")
 
 (def cx (atom 0))
 (def cy (atom 0))
@@ -87,7 +87,7 @@
 (defn editor-draw-rows [buf]
   (dotimes [i (deref screen-rows)]
     (if (= i (int (/ (deref screen-rows) 3)))
-      (let [welcome (str "Kilo editor -- version " kilo_version)
+      (let [welcome (str "Kilo editor -- version " kilo-version)
             padding (int (/ (- (deref screen-columns) (count welcome)) 2))]
         (.write buf "~")
         (.write buf (apply str (repeat (dec padding) " ")))
