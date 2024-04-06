@@ -68,7 +68,9 @@
 
 (defn editor-draw-rows []
   (dotimes [i (deref screen-rows)]
-    (print "~\r\n")))
+    (print "~")
+    (when (< i (- (deref screen-rows) 1))
+      (print "\r\n"))))
 
 (defn editor-refresh-screen []
   (print "\u001b[2J")
