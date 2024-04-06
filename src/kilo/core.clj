@@ -10,10 +10,10 @@
 
 (def kilo-version "0.0.1")
 
-(def arrow-left (byte \a))
-(def arrow-right (byte \d))
-(def arrow-up (byte \w))
-(def arrow-down (byte \s))
+(def arrow-left 1000)
+(def arrow-right 1001)
+(def arrow-up 1002)
+(def arrow-down 1003)
 
 (def cx (atom 0))
 (def cy (atom 0))
@@ -132,10 +132,12 @@
   (let [c (editor-read-key)]
     (cond
       (= c (ctrl-key \q)) -1
-      (= c (byte \a)) (editor-move-cursor c)
-      (= c (byte \d)) (editor-move-cursor c)
-      (= c (byte \w)) (editor-move-cursor c)
-      (= c (byte \s)) (editor-move-cursor c)
+      (or
+       (= c arrow-left)
+       (= c arrow-right)
+       (= c arrow-up)
+       (= c arrow-down))
+      (editor-move-cursor c)
       :else c)))
 
 
