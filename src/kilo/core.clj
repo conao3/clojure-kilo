@@ -66,20 +66,21 @@
 
 ;;; output
 
-(defn editor-draw-rows []
+(defn editor-draw-rows [buf]
   (dotimes [i (deref screen-rows)]
-    (print "~")
+    (.write buf "~")
     (when (< i (- (deref screen-rows) 1))
-      (print "\r\n"))))
+      (.write buf "\r\n"))))
 
 (defn editor-refresh-screen []
-  (print "\u001b[2J")
-  (print "\u001b[H")
+  (let [buf (java.io.BufferedWriter. *out*)]
+    (.write buf "\u001b[2J")
+    (.write buf "\u001b[H")
 
-  (editor-draw-rows)
+    (editor-draw-rows buf)
 
-  (print "\u001b[H")
-  (flush))
+    (.write buf "\u001b[H")
+    (.flush buf)))
 
 
 ;;; init
