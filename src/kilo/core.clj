@@ -69,17 +69,19 @@
 (defn editor-draw-rows [buf]
   (dotimes [i (deref screen-rows)]
     (.write buf "~")
+    (.write buf "\u001b[K")
     (when (< i (- (deref screen-rows) 1))
       (.write buf "\r\n"))))
 
 (defn editor-refresh-screen []
   (let [buf (java.io.BufferedWriter. *out*)]
-    (.write buf "\u001b[2J")
+    (.write buf "\u001b[?25l")
     (.write buf "\u001b[H")
 
     (editor-draw-rows buf)
 
     (.write buf "\u001b[H")
+    (.write buf "\u001b[?25h")
     (.flush buf)))
 
 
