@@ -112,9 +112,10 @@
 
 ;;; file i/o
 
-(defn editor-open []
-  (reset! row "Hello, world!")
-  (reset! numrows 1))
+(defn editor-open [filename]
+  (with-open [r (java.io.BufferedReader. (java.io.FileReader. filename))]
+    (reset! row (.readLine r))
+    (reset! numrows 1)))
 
 
 ;;; output
@@ -191,7 +192,8 @@
 (defn -main [& args]
   (let [terminal-config (enable-raw-mode)]
     (init-editor)
-    (editor-open)
+    (if (<= 1 (count args))
+      (editor-open (nth args 0)))
     (loop [inpt 0]
       (when-not (= inpt -1)
         (editor-refresh-screen)
