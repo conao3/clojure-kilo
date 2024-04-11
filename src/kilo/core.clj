@@ -2,6 +2,7 @@
   (:gen-class)
   (:require
    [clojure.string :as string]
+   [clojure.java.io :as io]
    [clojure.core.match :refer [match]]
    [flatland.useful.utils :as useful.utils]))
 
@@ -23,7 +24,7 @@
 (def cx (atom 0))
 (def cy (atom 0))
 (def numrows (atom 0))
-(def row (atom ""))
+(def row (atom []))
 (def screen-rows (atom 0))
 (def screen-columns (atom 0))
 
@@ -113,9 +114,8 @@
 ;;; file i/o
 
 (defn editor-open [filename]
-  (with-open [r (java.io.BufferedReader. (java.io.FileReader. filename))]
-    (reset! row (.readLine r))
-    (reset! numrows 1)))
+  (reset! row (string/split-lines (slurp filename)))
+  (reset! numrows (count @row)))
 
 
 ;;; output
@@ -130,7 +130,7 @@
           (.write buf (apply str (repeat (dec padding) " ")))
           (.write buf welcome))
         (.write buf "~"))
-      (.write buf (deref row)))
+      (.write buf (nth (deref row) i)))
     (.write buf "\u001b[K")
     (when (< i (- (deref screen-rows) 1))
       (.write buf "\r\n"))
@@ -185,7 +185,7 @@
     (reset! cx 0)
     (reset! cy 0)
     (reset! numrows 0)
-    (reset! row (atom ""))
+    (reset! row [])
     (reset! screen-rows rows)
     (reset! screen-columns columns)))
 
