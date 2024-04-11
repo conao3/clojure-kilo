@@ -22,6 +22,8 @@
 
 (def cx (atom 0))
 (def cy (atom 0))
+(def numrows (atom 0))
+(def row (atom ""))
 (def screen-rows (atom 0))
 (def screen-columns (atom 0))
 
@@ -108,17 +110,26 @@
     (map #(Integer/parseInt %) (string/split res #"\s"))))
 
 
+;;; file i/o
+
+(defn editor-open []
+  (reset! row "Hello, world!")
+  (reset! numrows 1))
+
+
 ;;; output
 
 (defn editor-draw-rows [buf]
   (dotimes [i (deref screen-rows)]
-    (if (= i (int (/ (deref screen-rows) 3)))
-      (let [welcome (str "Kilo editor -- version " KILO-VERSION)
-            padding (int (/ (- (deref screen-columns) (count welcome)) 2))]
-        (.write buf "~")
-        (.write buf (apply str (repeat (dec padding) " ")))
-        (.write buf welcome))
-      (.write buf "~"))
+    (if (>= i @numrows)
+      (if (= i (int (/ (deref screen-rows) 3)))
+        (let [welcome (str "Kilo editor -- version " KILO-VERSION)
+              padding (int (/ (- (deref screen-columns) (count welcome)) 2))]
+          (.write buf "~")
+          (.write buf (apply str (repeat (dec padding) " ")))
+          (.write buf welcome))
+        (.write buf "~"))
+      (.write buf (deref row)))
     (.write buf "\u001b[K")
     (when (< i (- (deref screen-rows) 1))
       (.write buf "\r\n"))
@@ -172,12 +183,15 @@
   (let [[rows columns] (get-window-size)]
     (reset! cx 0)
     (reset! cy 0)
+    (reset! numrows 0)
+    (reset! row (atom ""))
     (reset! screen-rows rows)
     (reset! screen-columns columns)))
 
 (defn -main [& args]
   (let [terminal-config (enable-raw-mode)]
     (init-editor)
+    (editor-open)
     (loop [inpt 0]
       (when-not (= inpt -1)
         (editor-refresh-screen)
