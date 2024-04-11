@@ -23,10 +23,11 @@
 
 (def cx (atom 0))
 (def cy (atom 0))
-(def numrows (atom 0))
-(def row (atom []))
+(def rowoff (atom 0))
 (def screen-rows (atom 0))
 (def screen-columns (atom 0))
+(def numrows (atom 0))
+(def row (atom []))
 
 (def debug-str (atom ""))
 
@@ -120,33 +121,43 @@
 
 ;;; output
 
+(defn editor-scroll []
+  (when (< @cy @rowoff)
+    (reset! rowoff @cy))
+  (when (<= (+ @rowoff @screen-rows) @cy)
+    (reset! rowoff (inc (- @cy @screen-rows)))))
+
 (defn editor-draw-rows [buf]
   (dotimes [i (deref screen-rows)]
-    (if (>= i @numrows)
-      (if (and (= 0 @numrows) (= i (int (/ (deref screen-rows) 3))))
-        (let [welcome (str "Kilo editor -- version " KILO-VERSION)
-              padding (int (/ (- (deref screen-columns) (count welcome)) 2))]
-          (.write buf "~")
-          (.write buf (apply str (repeat (dec padding) " ")))
-          (.write buf welcome))
-        (.write buf "~"))
-      (.write buf (nth (deref row) i)))
+    (let [filerow (+ i @rowoff)]
+      (if (>= filerow @numrows)
+        (if (and (= 0 @numrows) (= i (int (/ (deref screen-rows) 3))))
+          (let [welcome (str "Kilo editor -- version " KILO-VERSION)
+                padding (int (/ (- (deref screen-columns) (count welcome)) 2))]
+            (.write buf "~")
+            (.write buf (apply str (repeat (dec padding) " ")))
+            (.write buf welcome))
+          (.write buf "~"))
+        (.write buf (nth (deref row) filerow))))
     (.write buf "\u001b[K")
     (when (< i (- (deref screen-rows) 1))
       (.write buf "\r\n"))
     (when (= i (dec (deref screen-rows)))
-      (.write buf (format "x: %d, y: %d" (deref cx) (deref cy)))
+      (.write buf "\u001b[G")
+      (.write buf "\u001b[K")
+      (.write buf (format "x: %d, y: %d, numrows: %d, rowoff: %d" @cx @cy @numrows @rowoff))
       (when (not= (count @debug-str) 0)
         (.write buf (str " " @debug-str))))))
 
 (defn editor-refresh-screen []
+  (editor-scroll)
   (let [buf (java.io.BufferedWriter. *out*)]
     (.write buf "\u001b[?25l")
     (.write buf "\u001b[H")
 
     (editor-draw-rows buf)
 
-    (.write buf (format "\u001b[%d;%dH" @cy @cx))
+    (.write buf (format "\u001b[%d;%dH" (inc (- @cy @rowoff)) (inc @cx)))
     (.write buf "\u001b[?25h")
     (.flush buf)))
 
@@ -158,7 +169,7 @@
     (= c ARROW-LEFT) (swap! cx #(max 0 (dec %)))
     (= c ARROW-RIGHT) (swap! cx #(min @screen-columns (inc %)))
     (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
-    (= c ARROW-DOWN) (swap! cy #(min @screen-rows (inc %))))
+    (= c ARROW-DOWN) (swap! cy #(min (dec @numrows) (inc %))))
   c)
 
 (defn editor-process-keypress []
@@ -184,6 +195,7 @@
   (let [[rows columns] (get-window-size)]
     (reset! cx 0)
     (reset! cy 0)
+    (reset! rowoff 0)
     (reset! numrows 0)
     (reset! row [])
     (reset! screen-rows rows)
