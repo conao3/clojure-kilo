@@ -123,7 +123,7 @@
 (defn editor-draw-rows [buf]
   (dotimes [i (deref screen-rows)]
     (if (>= i @numrows)
-      (if (= i (int (/ (deref screen-rows) 3)))
+      (if (and (= 0 @numrows) (= i (int (/ (deref screen-rows) 3))))
         (let [welcome (str "Kilo editor -- version " KILO-VERSION)
               padding (int (/ (- (deref screen-columns) (count welcome)) 2))]
           (.write buf "~")
