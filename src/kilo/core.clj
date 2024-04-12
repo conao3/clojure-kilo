@@ -24,6 +24,7 @@
 (def cx (atom 0))
 (def cy (atom 0))
 (def rowoff (atom 0))
+(def coloff (atom 0))
 (def screen-rows (atom 0))
 (def screen-columns (atom 0))
 (def numrows (atom 0))
@@ -125,7 +126,11 @@
   (when (< @cy @rowoff)
     (reset! rowoff @cy))
   (when (<= (+ @rowoff @screen-rows) @cy)
-    (reset! rowoff (inc (- @cy @screen-rows)))))
+    (reset! rowoff (inc (- @cy @screen-rows))))
+  (when (< @cx @coloff)
+    (reset! coloff @cx))
+  (when (<= (+ @coloff @screen-columns) @cx)
+    (reset! coloff (inc (- @cx @screen-columns)))))
 
 (defn editor-draw-rows [buf]
   (dotimes [i (deref screen-rows)]
@@ -138,16 +143,19 @@
             (.write buf (apply str (repeat (dec padding) " ")))
             (.write buf welcome))
           (.write buf "~"))
-        (.write buf (nth (deref row) filerow))))
+        (let [trow (nth (deref row) filerow)
+              len (count trow)
+              start (min len @coloff)
+              end (min (+ @screen-columns @coloff) len)]
+          (.write buf (subs trow start end)))))
     (.write buf "\u001b[K")
     (when (< i (- (deref screen-rows) 1))
       (.write buf "\r\n"))
     (when (= i (dec (deref screen-rows)))
       (.write buf "\u001b[G")
       (.write buf "\u001b[K")
-      (.write buf (format "x: %d, y: %d, numrows: %d, rowoff: %d" @cx @cy @numrows @rowoff))
-      (when (not= (count @debug-str) 0)
-        (.write buf (str " " @debug-str))))))
+      (let [debug (format "x: %d, y: %d, numrows: %d, rowoff: %d, coloff: %d %S" @cx @cy @numrows @rowoff @coloff @debug-str)]
+        (.write buf (subs debug 0 (min @screen-columns (count debug))))))))
 
 (defn editor-refresh-screen []
   (editor-scroll)
@@ -157,7 +165,7 @@
 
     (editor-draw-rows buf)
 
-    (.write buf (format "\u001b[%d;%dH" (inc (- @cy @rowoff)) (inc @cx)))
+    (.write buf (format "\u001b[%d;%dH" (inc (- @cy @rowoff)) (inc (- @cx @coloff))))
     (.write buf "\u001b[?25h")
     (.flush buf)))
 
@@ -167,7 +175,7 @@
 (defn editor-move-cursor [c]
   (cond
     (= c ARROW-LEFT) (swap! cx #(max 0 (dec %)))
-    (= c ARROW-RIGHT) (swap! cx #(min @screen-columns (inc %)))
+    (= c ARROW-RIGHT) (swap! cx inc)
     (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
     (= c ARROW-DOWN) (swap! cy #(min (dec @numrows) (inc %))))
   c)
@@ -196,6 +204,7 @@
     (reset! cx 0)
     (reset! cy 0)
     (reset! rowoff 0)
+    (reset! coloff 0)
     (reset! numrows 0)
     (reset! row [])
     (reset! screen-rows rows)
