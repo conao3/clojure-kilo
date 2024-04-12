@@ -133,25 +133,25 @@
     (reset! coloff (inc (- @cx @screen-columns)))))
 
 (defn editor-draw-rows [buf]
-  (dotimes [i (deref screen-rows)]
+  (dotimes [i @screen-rows]
     (let [filerow (+ i @rowoff)]
       (if (>= filerow @numrows)
-        (if (and (= 0 @numrows) (= i (int (/ (deref screen-rows) 3))))
+        (if (and (= 0 @numrows) (= i (int (/ @screen-rows 3))))
           (let [welcome (str "Kilo editor -- version " KILO-VERSION)
-                padding (int (/ (- (deref screen-columns) (count welcome)) 2))]
+                padding (int (/ (- @screen-columns (count welcome)) 2))]
             (.write buf "~")
             (.write buf (apply str (repeat (dec padding) " ")))
             (.write buf welcome))
           (.write buf "~"))
-        (let [trow (nth (deref row) filerow)
+        (let [trow (nth @row filerow)
               len (count trow)
               start (min len @coloff)
               end (min (+ @screen-columns @coloff) len)]
           (.write buf (subs trow start end)))))
     (.write buf "\u001b[K")
-    (when (< i (- (deref screen-rows) 1))
+    (when (< i (- @screen-rows 1))
       (.write buf "\r\n"))
-    (when (= i (dec (deref screen-rows)))
+    (when (= i (dec @screen-rows))
       (.write buf "\u001b[G")
       (.write buf "\u001b[K")
       (let [debug (format "x: %d, y: %d, numrows: %d, rowoff: %d, coloff: %d %S" @cx @cy @numrows @rowoff @coloff @debug-str)]
