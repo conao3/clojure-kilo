@@ -174,8 +174,20 @@
 
 (defn editor-move-cursor [c]
   (cond
-    (= c ARROW-LEFT) (swap! cx #(max 0 (dec %)))
-    (= c ARROW-RIGHT) (swap! cx inc)
+    (= c ARROW-LEFT)
+    (do
+      (if (not (= 0 @cx))
+        (swap! cx #(max 0 (dec %)))
+        (when (< 0 @cy)
+          (swap! cy dec)
+          (reset! cx (count (nth @row @cy))))))
+    (= c ARROW-RIGHT)
+    (do
+      (if (< @cx (count (nth @row @cy)))
+        (swap! cx inc)
+        (when (< @cy @numrows)
+          (swap! cy inc)
+          (reset! cx 0))))
     (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
     (= c ARROW-DOWN) (swap! cy #(min (dec @numrows) (inc %))))
   (let [trow (when (< @cy @numrows) (nth @row @cy))]
