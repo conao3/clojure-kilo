@@ -178,6 +178,9 @@
     (= c ARROW-RIGHT) (swap! cx inc)
     (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
     (= c ARROW-DOWN) (swap! cy #(min (dec @numrows) (inc %))))
+  (let [trow (when (< @cy @numrows) (nth @row @cy))]
+    (when (< (count trow) @cx)
+      (reset! cx (count trow))))
   c)
 
 (defn editor-process-keypress []
