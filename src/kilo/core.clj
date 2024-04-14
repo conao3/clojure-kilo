@@ -153,10 +153,10 @@
             (.write buf welcome))
           (.write buf "~"))
         (let [trow (nth @row filerow)
-              len (:size trow)
+              len (:rsize trow)
               start (min len @coloff)
               end (min (+ @screen-columns @coloff) len)]
-          (.write buf (subs (:chars trow) start end)))))
+          (.write buf (subs (:render trow) start end)))))
     (.write buf "\u001b[K")
     (when (< i (- @screen-rows 1))
       (.write buf "\r\n"))
