@@ -119,7 +119,9 @@
 
 (defn chars->Row [chars]
   (map->Row
-   {:chars chars
+   {:size (count chars)
+    :rsize (count chars)
+    :chars chars
     :render chars}))
 
 (defn editor-open [filename]
@@ -150,11 +152,11 @@
             (.write buf (apply str (repeat (dec padding) " ")))
             (.write buf welcome))
           (.write buf "~"))
-        (let [trow (:chars (nth @row filerow))
-              len (count trow)
+        (let [trow (nth @row filerow)
+              len (:size trow)
               start (min len @coloff)
               end (min (+ @screen-columns @coloff) len)]
-          (.write buf (subs trow start end)))))
+          (.write buf (subs (:chars trow) start end)))))
     (.write buf "\u001b[K")
     (when (< i (- @screen-rows 1))
       (.write buf "\r\n"))
@@ -187,19 +189,19 @@
         (swap! cx #(max 0 (dec %)))
         (when (< 0 @cy)
           (swap! cy dec)
-          (reset! cx (count (:chars (nth @row @cy)))))))
+          (reset! cx (:size (nth @row @cy))))))
     (= c ARROW-RIGHT)
     (do
-      (if (< @cx (count (:chars (nth @row @cy))))
+      (if (< @cx (:size (nth @row @cy)))
         (swap! cx inc)
         (when (< @cy @numrows)
           (swap! cy inc)
           (reset! cx 0))))
     (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
     (= c ARROW-DOWN) (swap! cy #(min (dec @numrows) (inc %))))
-  (let [trow (when (< @cy @numrows) (:chars (nth @row @cy)))]
-    (when (< (count trow) @cx)
-      (reset! cx (count trow))))
+  (let [trow (when (< @cy @numrows) (nth @row @cy))]
+    (when (< (:size trow) @cx)
+      (reset! cx (:size trow))))
   c)
 
 (defn editor-process-keypress []
