@@ -28,7 +28,9 @@
 (def screen-rows (atom 0))
 (def screen-columns (atom 0))
 (def numrows (atom 0))
-(def row (atom []))
+
+(defrecord Row [chars render])
+(def row (atom []))                     ; list of Row
 
 (def debug-str (atom ""))
 
@@ -116,7 +118,7 @@
 ;;; file i/o
 
 (defn editor-open [filename]
-  (reset! row (string/split-lines (slurp filename)))
+  (reset! row (map #(->Row % %) (string/split-lines (slurp filename))))
   (reset! numrows (count @row)))
 
 
@@ -143,7 +145,7 @@
             (.write buf (apply str (repeat (dec padding) " ")))
             (.write buf welcome))
           (.write buf "~"))
-        (let [trow (nth @row filerow)
+        (let [trow (:chars (nth @row filerow))
               len (count trow)
               start (min len @coloff)
               end (min (+ @screen-columns @coloff) len)]
@@ -180,17 +182,17 @@
         (swap! cx #(max 0 (dec %)))
         (when (< 0 @cy)
           (swap! cy dec)
-          (reset! cx (count (nth @row @cy))))))
+          (reset! cx (count (:chars (nth @row @cy)))))))
     (= c ARROW-RIGHT)
     (do
-      (if (< @cx (count (nth @row @cy)))
+      (if (< @cx (count (:chars (nth @row @cy))))
         (swap! cx inc)
         (when (< @cy @numrows)
           (swap! cy inc)
           (reset! cx 0))))
     (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
     (= c ARROW-DOWN) (swap! cy #(min (dec @numrows) (inc %))))
-  (let [trow (when (< @cy @numrows) (nth @row @cy))]
+  (let [trow (when (< @cy @numrows) (:chars (nth @row @cy)))]
     (when (< (count trow) @cx)
       (reset! cx (count trow))))
   c)
