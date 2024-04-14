@@ -117,8 +117,13 @@
 
 ;;; file i/o
 
+(defn chars->Row [chars]
+  (map->Row
+   {:chars chars
+    :render chars}))
+
 (defn editor-open [filename]
-  (reset! row (map #(->Row % %) (string/split-lines (slurp filename))))
+  (reset! row (map chars->Row (string/split-lines (slurp filename))))
   (reset! numrows (count @row)))
 
 
