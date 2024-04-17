@@ -118,11 +118,16 @@
 ;;; file i/o
 
 (defn chars->Row [chars]
-  (map->Row
-   {:size (count chars)
-    :rsize (count chars)
-    :chars chars
-    :render chars}))
+  (let [lst (atom '())
+        lstsize (atom 0)]
+    (doseq [c chars]
+      (swap! lst conj c))
+    (let [render (string/join (reverse @lst))]
+      (map->Row
+       {:size (count chars)
+        :rsize (count render)
+        :chars chars
+        :render render}))))
 
 (defn editor-open [filename]
   (reset! row (map chars->Row (string/split-lines (slurp filename))))
@@ -189,10 +194,10 @@
         (swap! cx #(max 0 (dec %)))
         (when (< 0 @cy)
           (swap! cy dec)
-          (reset! cx (:size (nth @row @cy))))))
+          (reset! cx (:rsize (nth @row @cy))))))
     (= c ARROW-RIGHT)
     (do
-      (if (< @cx (:size (nth @row @cy)))
+      (if (< @cx (:rsize (nth @row @cy)))
         (swap! cx inc)
         (when (< @cy @numrows)
           (swap! cy inc)
@@ -200,8 +205,8 @@
     (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
     (= c ARROW-DOWN) (swap! cy #(min (dec @numrows) (inc %))))
   (let [trow (when (< @cy @numrows) (nth @row @cy))]
-    (when (< (:size trow) @cx)
-      (reset! cx (:size trow))))
+    (when (< (:rsize trow) @cx)
+      (reset! cx (:rsize trow))))
   c)
 
 (defn editor-process-keypress []
