@@ -193,7 +193,13 @@
     (.write buf "\r\n"))
   (when @debugp
     (let [debug (format "cx: %d, cy: %d, rx: %d, numrows: %d, rowoff: %d, coloff: %d %S" @cx @cy @rx @numrows @rowoff @coloff @debug-str)]
-      (.write buf (subs debug 0 (min @screen-columns (count debug)))))))
+      (.write buf (subs debug 0 (min @screen-columns (count debug))))
+      (.write buf "\r\n"))))
+
+(defn editor-draw-status-bar [buf]
+  (.write buf "\u001b[7m")
+  (.write buf (apply str (repeat @screen-columns " ")))
+  (.write buf "\u001b[m"))
 
 (defn editor-refresh-screen []
   (editor-scroll)
@@ -202,6 +208,7 @@
     (.write buf "\u001b[H")
 
     (editor-draw-rows buf)
+    (editor-draw-status-bar buf)
 
     (.write buf (format "\u001b[%d;%dH" (inc (- @cy @rowoff)) (inc (- @rx @coloff))))
     (.write buf "\u001b[?25h")
