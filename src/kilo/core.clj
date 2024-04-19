@@ -23,11 +23,13 @@
 
 (def cx (atom 0))
 (def cy (atom 0))
+(def rx (atom 0))
 (def rowoff (atom 0))
 (def coloff (atom 0))
 (def screen-rows (atom 0))
 (def screen-columns (atom 0))
 (def numrows (atom 0))
+(def tab-stop (atom 8))
 
 (defrecord Row [chars render])
 (def row (atom []))                     ; list of Row
@@ -115,6 +117,17 @@
     (map #(Integer/parseInt %) (string/split res #"\s"))))
 
 
+;;; row operations
+
+(defn editor-row-cx-to-rx [row cx]
+  (let [rx (atom 0)]
+    (doseq [s (subs (:chars row) 0 cx)]
+      (swap! rx inc)
+      (when (= s \tab)
+        (swap! rx #(+ % (- @tab-stop (mod % @tab-stop))))))
+    @rx))
+
+
 ;;; file i/o
 
 (defn chars->Row [chars]
@@ -125,7 +138,7 @@
         (= c \tab)
         (do
           (swap! lst conj " ")          ; min space size
-          (dotimes [_ (- 8 (mod (count @lst) 8))]
+          (dotimes [_ (- @tab-stop (mod (count @lst) @tab-stop))]
             (swap! lst conj " ")))
         true
         (do
@@ -146,14 +159,17 @@
 ;;; output
 
 (defn editor-scroll []
+  (reset! rx 0)
+  (when (< @cy @numrows)
+    (reset! rx (editor-row-cx-to-rx (nth @row @cy) @cx)))
   (when (< @cy @rowoff)
     (reset! rowoff @cy))
   (when (<= (+ @rowoff @screen-rows) @cy)
     (reset! rowoff (inc (- @cy @screen-rows))))
-  (when (< @cx @coloff)
-    (reset! coloff @cx))
-  (when (<= (+ @coloff @screen-columns) @cx)
-    (reset! coloff (inc (- @cx @screen-columns)))))
+  (when (< @rx @coloff)
+    (reset! coloff @rx))
+  (when (<= (+ @coloff @screen-columns) @rx)
+    (reset! coloff (inc (- @rx @screen-columns)))))
 
 (defn editor-draw-rows [buf]
   (dotimes [i @screen-rows]
@@ -177,7 +193,7 @@
     (when (= i (dec @screen-rows))
       (.write buf "\u001b[G")
       (.write buf "\u001b[K")
-      (let [debug (format "x: %d, y: %d, numrows: %d, rowoff: %d, coloff: %d %S" @cx @cy @numrows @rowoff @coloff @debug-str)]
+      (let [debug (format "cx: %d, cy: %d, rx: %d, numrows: %d, rowoff: %d, coloff: %d %S" @cx @cy @rx @numrows @rowoff @coloff @debug-str)]
         (.write buf (subs debug 0 (min @screen-columns (count debug))))))))
 
 (defn editor-refresh-screen []
@@ -188,7 +204,7 @@
 
     (editor-draw-rows buf)
 
-    (.write buf (format "\u001b[%d;%dH" (inc (- @cy @rowoff)) (inc (- @cx @coloff))))
+    (.write buf (format "\u001b[%d;%dH" (inc (- @cy @rowoff)) (inc (- @rx @coloff))))
     (.write buf "\u001b[?25h")
     (.flush buf)))
 
@@ -203,10 +219,10 @@
         (swap! cx #(max 0 (dec %)))
         (when (< 0 @cy)
           (swap! cy dec)
-          (reset! cx (:rsize (nth @row @cy))))))
+          (reset! cx (:size (nth @row @cy))))))
     (= c ARROW-RIGHT)
     (do
-      (if (< @cx (:rsize (nth @row @cy)))
+      (if (< @cx (:size (nth @row @cy)))
         (swap! cx inc)
         (when (< @cy @numrows)
           (swap! cy inc)
@@ -214,8 +230,8 @@
     (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
     (= c ARROW-DOWN) (swap! cy #(min (dec @numrows) (inc %))))
   (let [trow (when (< @cy @numrows) (nth @row @cy))]
-    (when (< (:rsize trow) @cx)
-      (reset! cx (:rsize trow))))
+    (when (< (:size trow) @cx)
+      (reset! cx (:size trow))))
   c)
 
 (defn editor-process-keypress []
@@ -241,6 +257,7 @@
   (let [[rows columns] (get-window-size)]
     (reset! cx 0)
     (reset! cy 0)
+    (reset! rx 0)
     (reset! rowoff 0)
     (reset! coloff 0)
     (reset! numrows 0)
