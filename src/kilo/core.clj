@@ -29,7 +29,9 @@
 (def screen-rows (atom 0))
 (def screen-columns (atom 0))
 (def numrows (atom 0))
+
 (def tab-stop (atom 8))
+(def debugp (atom true))
 
 (defrecord Row [chars render])
 (def row (atom []))                     ; list of Row
@@ -189,8 +191,9 @@
           (.write buf (subs (:render trow) start end)))))
     (.write buf "\u001b[K")
     (.write buf "\r\n"))
-  (let [debug (format "cx: %d, cy: %d, rx: %d, numrows: %d, rowoff: %d, coloff: %d %S" @cx @cy @rx @numrows @rowoff @coloff @debug-str)]
-    (.write buf (subs debug 0 (min @screen-columns (count debug))))))
+  (when @debugp
+    (let [debug (format "cx: %d, cy: %d, rx: %d, numrows: %d, rowoff: %d, coloff: %d %S" @cx @cy @rx @numrows @rowoff @coloff @debug-str)]
+      (.write buf (subs debug 0 (min @screen-columns (count debug)))))))
 
 (defn editor-refresh-screen []
   (editor-scroll)
@@ -264,7 +267,7 @@
     (reset! coloff 0)
     (reset! numrows 0)
     (reset! row [])
-    (reset! screen-rows (dec rows))
+    (reset! screen-rows (- rows 1 (if @debugp 1 0)))
     (reset! screen-columns columns)))
 
 (defn -main [& args]
