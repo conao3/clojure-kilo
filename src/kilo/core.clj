@@ -35,6 +35,7 @@
 
 (defrecord Row [chars render])
 (def row (atom []))                     ; list of Row
+(def filename (atom nil))
 
 (def debug-str (atom ""))
 
@@ -153,9 +154,10 @@
         :chars chars
         :render render}))))
 
-(defn editor-open [filename]
-  (reset! row (map chars->Row (string/split-lines (slurp filename))))
-  (reset! numrows (count @row)))
+(defn editor-open [filename_]
+  (reset! row (map chars->Row (string/split-lines (slurp filename_))))
+  (reset! numrows (count @row))
+  (reset! filename filename_))
 
 
 ;;; output
@@ -198,7 +200,11 @@
 
 (defn editor-draw-status-bar [buf]
   (.write buf "\u001b[7m")
-  (.write buf (apply str (repeat @screen-columns " ")))
+  (let [s (format "%S - %d lines"
+                  (or @filename "[No Name]")
+                  @numrows)]
+    (.write buf (subs s 0 (min @screen-columns (count s))))
+    (.write buf (apply str (repeat (- @screen-columns (count s)) " "))))
   (.write buf "\u001b[m"))
 
 (defn editor-refresh-screen []
@@ -274,6 +280,7 @@
     (reset! coloff 0)
     (reset! numrows 0)
     (reset! row [])
+    (reset! filename nil)
     (reset! screen-rows (- rows 1 (if @debugp 1 0)))
     (reset! screen-columns columns)))
 
