@@ -121,7 +121,16 @@
   (let [lst (atom '())
         lstsize (atom 0)]
     (doseq [c chars]
-      (swap! lst conj c))
+      (cond
+        (= c \tab)
+        (do
+          (swap! lst conj " ")          ; min space size
+          (while (not (= 0 (mod (count @lst) 8)))
+            (swap! lst conj " ")))
+        true
+        (do
+          (swap! lst conj c)
+          (swap! lstsize inc))))
     (let [render (string/join (reverse @lst))]
       (map->Row
        {:size (count chars)
