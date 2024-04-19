@@ -202,9 +202,11 @@
   (.write buf "\u001b[7m")
   (let [s (format "%S - %d lines"
                   (or @filename "[No Name]")
-                  @numrows)]
+                  @numrows)
+        rs (format "%d/%d" (inc @cy) @numrows)]
     (.write buf (subs s 0 (min @screen-columns (count s))))
-    (.write buf (apply str (repeat (- @screen-columns (count s)) " "))))
+    (.write buf (apply str (repeat (- @screen-columns (count s) (count rs)) " ")))
+    (.write buf (subs rs 0 (min (max 0 (- @screen-columns (count s))) (count rs)))))
   (.write buf "\u001b[m"))
 
 (defn editor-refresh-screen []
