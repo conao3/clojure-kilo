@@ -245,7 +245,7 @@
        (= c ARROW-DOWN))
       (editor-move-cursor c)
       (= c HOME-KEY) (reset! cx 0)
-      (= c END-KEY) (reset! cx @screen-columns)
+      (= c END-KEY) (reset! cx (:size (nth @row @cy)))
       (= c PAGE-UP)
       (do
         (reset! cy @rowoff)
