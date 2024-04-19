@@ -125,7 +125,7 @@
         (= c \tab)
         (do
           (swap! lst conj " ")          ; min space size
-          (while (not (= 0 (mod (count @lst) 8)))
+          (dotimes [_ (- 8 (mod (count @lst) 8))]
             (swap! lst conj " ")))
         true
         (do
