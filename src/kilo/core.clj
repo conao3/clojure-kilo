@@ -188,13 +188,9 @@
               end (min (+ @screen-columns @coloff) len)]
           (.write buf (subs (:render trow) start end)))))
     (.write buf "\u001b[K")
-    (when (< i (- @screen-rows 1))
-      (.write buf "\r\n"))
-    (when (= i (dec @screen-rows))
-      (.write buf "\u001b[G")
-      (.write buf "\u001b[K")
-      (let [debug (format "cx: %d, cy: %d, rx: %d, numrows: %d, rowoff: %d, coloff: %d %S" @cx @cy @rx @numrows @rowoff @coloff @debug-str)]
-        (.write buf (subs debug 0 (min @screen-columns (count debug))))))))
+    (.write buf "\r\n"))
+  (let [debug (format "cx: %d, cy: %d, rx: %d, numrows: %d, rowoff: %d, coloff: %d %S" @cx @cy @rx @numrows @rowoff @coloff @debug-str)]
+    (.write buf (subs debug 0 (min @screen-columns (count debug))))))
 
 (defn editor-refresh-screen []
   (editor-scroll)
@@ -268,7 +264,7 @@
     (reset! coloff 0)
     (reset! numrows 0)
     (reset! row [])
-    (reset! screen-rows rows)
+    (reset! screen-rows (dec rows))
     (reset! screen-columns columns)))
 
 (defn -main [& args]
