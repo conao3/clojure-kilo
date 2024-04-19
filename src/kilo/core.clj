@@ -246,8 +246,14 @@
       (editor-move-cursor c)
       (= c HOME-KEY) (reset! cx 0)
       (= c END-KEY) (reset! cx @screen-columns)
-      (= c PAGE-UP) (dotimes [_ @screen-rows] (editor-move-cursor ARROW-UP))
-      (= c PAGE-DOWN) (dotimes [_ @screen-rows] (editor-move-cursor ARROW-DOWN))
+      (= c PAGE-UP)
+      (do
+        (reset! cy @rowoff)
+        (dotimes [_ @screen-rows] (editor-move-cursor ARROW-UP)))
+      (= c PAGE-DOWN)
+      (do
+        (reset! cy (min (dec @numrows) (dec (+ @rowoff @screen-rows))))
+        (dotimes [_ @screen-rows] (editor-move-cursor ARROW-DOWN)))
       :else c)))
 
 
