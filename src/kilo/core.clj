@@ -164,7 +164,7 @@
 
 (defn editor-scroll []
   (reset! rx 0)
-  (when (< @cy @numrows)
+  (when (and (not (= 0 @numrows)) (< @cy @numrows))
     (reset! rx (editor-row-cx-to-rx (nth @row @cy) @cx)))
   (when (< @cy @rowoff)
     (reset! rowoff @cy))
@@ -231,19 +231,22 @@
         (swap! cx #(max 0 (dec %)))
         (when (< 0 @cy)
           (swap! cy dec)
-          (reset! cx (:size (nth @row @cy))))))
+          (when (< @cy @numrows)
+            (reset! cx (:size (nth @row @cy)))))))
     (= c ARROW-RIGHT)
     (do
-      (if (< @cx (:size (nth @row @cy)))
-        (swap! cx inc)
-        (when (< @cy @numrows)
-          (swap! cy inc)
-          (reset! cx 0))))
+      (when (< @cy @numrows)
+        (if (< @cx (:size (nth @row @cy)))
+          (swap! cx inc)
+          (when (< @cy @numrows)
+            (swap! cy inc)
+            (reset! cx 0)))))
     (= c ARROW-UP) (swap! cy #(max 0 (dec %)))
     (= c ARROW-DOWN) (swap! cy #(min (dec @numrows) (inc %))))
-  (let [trow (when (< @cy @numrows) (nth @row @cy))]
-    (when (< (:size trow) @cx)
-      (reset! cx (:size trow))))
+  (when (and (not (= 0 @numrows)) (< @cy @numrows))
+    (let [trow (nth @row @cy)]
+      (when (< (:size trow) @cx)
+        (reset! cx (:size trow)))))
   c)
 
 (defn editor-process-keypress []
