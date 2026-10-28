@@ -1,7 +1,7 @@
 {:deps
- {org.clojure/core.match {:mvn/version "1.1.0"}
+ {org.clojure/core.match {:mvn/version "1.1.1"}
   org.flatland/useful {:mvn/version "0.11.6"}}
  :aliases
  {:build
-  {:deps {com.github.liquidz/build.edn {:git/tag "0.11.241" :git/sha "277bf6e"}}
+  {:deps {com.github.liquidz/build.edn {:git/tag "0.11.266" :git/sha "849302d"}}
    :ns-default build-edn.main}}}
